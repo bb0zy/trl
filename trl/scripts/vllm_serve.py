@@ -107,7 +107,7 @@ class ScriptArguments:
         metadata={"help": "Port to run the server on."},
     )
     gpu_memory_utilization: float = field(
-        default=0.9,
+        default=0.5,
         metadata={
             "help": "Ratio (between 0 and 1) of GPU memory to reserve for the model weights, activations, and KV "
             "cache on the device dedicated to generation powered by vLLM. Higher values will increase the KV cache "

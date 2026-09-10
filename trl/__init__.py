@@ -71,6 +71,8 @@ _import_structure = {
         "WeaveCallback",
         "get_peft_config",
         "get_quantization_config",
+        "DOPDConfig",
+        "DOPDTrainer"
     ],
 }
 
@@ -120,6 +122,8 @@ if TYPE_CHECKING:
         WeaveCallback,
         get_peft_config,
         get_quantization_config,
+        DOPDConfig,
+        DOPDTrainer
     )
 
 else:
