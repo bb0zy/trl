@@ -4,23 +4,12 @@ from trl import DOPDTrainer
 from transformers import Qwen3VLForConditionalGeneration, BitsAndBytesConfig
 import torch
 from peft import LoraConfig
-from trl import DOPDConfig
+from modelscope.msdatasets import MsDataset
 
-def make_conversation(example):
-    prompt = [
-        {
-            "role": "system",
-            "content": [{"type": "text", "text": SYSTEM_PROMPT}],
-        },
-        {
-            "role": "user",
-            "content": [
-                {"type": "image", "image": example["image"]},
-                {"type": "text", "text": example["problem"]},
-            ],
-        },
-    ]
-    return {"prompt": prompt, "image": example["image"]}
+
+from trl import DOPDConfig
+def dummy_reward(completions, prompts, **kwargs):
+    return [0.0] * len(completions)
 
 if __name__ =="__main__":
     stu_model_name = "Qwen/Qwen3-1.7B"
@@ -32,7 +21,12 @@ if __name__ =="__main__":
     tea_model_ref = "DeepSeek-R1-Distill-Qwen-1.5B"
     tea_model_ref_path = "/models/DeepSeek-R1-Distill-Qwen-1.5B"
 
+    train_data_name = "open-r1/DAPO-Math-17k-Processed"
+    # 从 modelscope 加载
+    ds = MsDataset.load("train_data_name", subset_name="default", split="train")
 
+    # 转成 HuggingFace Dataset
+    train_dataset = ds.to_hf_dataset()
     SYSTEM_PROMPT = """
                     Solve the following math problem step by step.
                     The last line of your response should be of the form
@@ -55,39 +49,42 @@ if __name__ =="__main__":
     )
     
 
-    output_dir = "Qwen3-VL-4B-Instruct-trl-grpo"
+    output_dir = "/model/Qwen/Qwen3-1.7B-dopd"
 
-    # Configure training arguments using GRPOConfig
-    training_args = GRPOConfig(
+    
+    training_args = DOPDConfig(
         learning_rate=2e-5,
-        #num_train_epochs=1,
-        max_steps=100,                                        # Number of dataset passes. For full trainings, use `num_train_epochs` instead
+        num_train_epochs=3,
+        # max_steps=100,                                        # Number of dataset passes. For full trainings, use `num_train_epochs` instead
 
         # Parameters that control the data preprocessing
         per_device_train_batch_size=2,
         max_completion_length=1024, # default: 256            # Max completion length produced during training
-        num_generations=2, # 2, # default: 8                  # Number of generations produced during training for comparison
+        num_generations=1, # 2, # default: 8                  # Number of generations produced during training for comparison
 
         fp16=True,
 
         # Parameters related to reporting and saving
         output_dir=output_dir,                                # Where to save model checkpoints and logs
         logging_steps=1,                                      # Log training metrics every N steps
-        report_to="trackio",                                  # Experiment tracking tool
-
+        report_to="wandb",                                  # Experiment tracking tool
+        run_name="dopd-exp-1",       # wandb run 名字
+        logging_steps=10,
+        save_steps=100,
+        save_strategy="steps",
+        
         # Hub integration
-        push_to_hub=True,
-        log_completions=True
+        push_to_hub=False,
+        # log_completions=True
     )
  
 
-    trainer = GRPOTrainer(
-        model=model,
-        reward_funcs=[format_reward, len_reward],
+    trainer = DOPDTrainer(
+        model=stu_model_name,
         args=training_args,
+        reward_funcs=dummy_reward,
         train_dataset=train_dataset,
         peft_config=peft_config,
     )
     trainer_stats = trainer.train()
     trainer.save_model(output_dir)
-    trainer.push_to_hub(dataset_name=dataset_id)

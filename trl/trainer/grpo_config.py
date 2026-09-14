@@ -475,14 +475,14 @@ class GRPOConfig(_BaseConfig):
         },
     )
     num_generations: int | None = field(
-        default=8,
+        default=1,
         metadata={
             "help": "Number of generations to sample. The effective batch size (num_processes * per_device_batch_size "
             "* gradient_accumulation_steps) must be evenly divisible by this value."
         },
     )
     num_generations_eval: int | None = field(
-        default=None,
+        default=1,
         metadata={
             "help": "Number of generations to sample during evaluation. This allows using fewer generations during "
             "evaluation to save computation. If `None`, uses the value of `num_generations`."
@@ -534,7 +534,7 @@ class GRPOConfig(_BaseConfig):
         },
     )
     top_k: int = field(
-        default=0,
+        default=16,
         metadata={
             "help": "Number of highest probability vocabulary tokens to keep for top-k-filtering. If `0`, "
             "top-k-filtering is disabled and all tokens are considered."

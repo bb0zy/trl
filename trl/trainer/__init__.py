@@ -29,6 +29,8 @@ _import_structure = {
     "distillation_trainer": ["DistillationTrainer"],
     "dpo_config": ["DPOConfig"],
     "dpo_trainer": ["DPOTrainer"],
+    "dopd_config": ["DOPDConfig"],
+    "dopd_trainer": ["DOPDTrainer"],
     "grpo_config": ["GRPOConfig"],
     "grpo_trainer": ["GRPOTrainer"],
     "kto_config": ["KTOConfig"],
@@ -61,6 +63,8 @@ if TYPE_CHECKING:
     from .distillation_trainer import DistillationTrainer
     from .dpo_config import DPOConfig
     from .dpo_trainer import DPOTrainer
+    from .dopd_config import DOPDConfig
+    from .dopd_trainer import DOPDTrainer
     from .grpo_config import GRPOConfig
     from .grpo_trainer import GRPOTrainer
     from .kto_config import KTOConfig
